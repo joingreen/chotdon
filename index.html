@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký mua hàng</title>
+    <!-- Import Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #495057;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        h2 {
+            color: #343a40;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 14px;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #495057;
+            text-align: left;
+        }
+        input[type="text"], input[type="tel"] {
+            padding: 12px 15px;
+            margin-top: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f8f9fa;
+        }
+        input[type="text"]:focus, input[type="tel"]:focus {
+            outline: none;
+            border-color: #80bdff;
+            background-color: #fff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+        }
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        #location {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #28a745;
+        }
+        .illustration {
+            width: 100%;
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Thêm hình minh họa -->
+        <img src="https://cdn-icons-png.flaticon.com/512/295/295128.png" alt="Cart Illustration" class="illustration">
+        
+        <h2>Đăng ký tư vấn mua hàng</h2>
+        <p>Nhập thông tin của bạn để nhận tư vấn chi tiết và nhanh chóng từ chúng tôi.</p>
+        
+        <form id="registrationForm" action="/submit" method="POST">
+            <label for="name">Tên của bạn:</label>
+            <input type="text" id="name" name="name" required placeholder="Nhập tên của bạn">
+
+            <label for="phone">Số điện thoại:</label>
+            <input type="tel" id="phone" name="phone" required placeholder="Nhập số điện thoại của bạn">
+
+            <input type="hidden" id="locationField" name="location">
+            <input type="submit" value="Đăng ký tư vấn">
+        </form>
+        <p id="location">Đang xác định vị trí...</p>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                document.getElementById("location").innerText = "Trình duyệt của bạn không hỗ trợ định vị.";
+            }
+
+            function showPosition(position) {
+                var lat = position.coords.latitude;
+                var lon = position.coords.longitude;
+
+                // Sử dụng Google Maps Geocoding API để chuyển tọa độ thành địa chỉ.
+                var apiKey = 'YOUR_GOOGLE_MAPS_API_KEY'; // Thay bằng API key của bạn
+                var url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lon}&key=${apiKey}`;
+
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "OK") {
+                            var address = data.results[0].formatted_address;
+                            document.getElementById("location").innerText = "Vị trí của bạn: " + address;
+                            document.getElementById("locationField").value = address; // Lưu địa chỉ vào trường ẩn
+                        } else {
+                            document.getElementById("location").innerText = "Không thể lấy địa chỉ từ tọa độ.";
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById("location").innerText = "Có lỗi xảy ra khi lấy địa chỉ.";
+                    });
+            }
+
+            function showError(error) {
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        document.getElementById("location").innerText = "Người dùng từ chối truy cập vị trí.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        document.getElementById("location").innerText = "Thông tin vị trí không khả dụng.";
+                        break;
+                    case error.TIMEOUT:
+                        document.getElementById("location").innerText = "Yêu cầu lấy vị trí đã hết thời gian.";
+                        break;
+                    case error.UNKNOWN_ERROR:
+                        document.getElementById("location").innerText = "Có lỗi không xác định xảy ra.";
+                        break;
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
